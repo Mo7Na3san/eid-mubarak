@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أي شخصية عيد أنت؟ 🎭🌙</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD166;
+    --gold-dark: #C8973A;
+    --cream: #F5E6C8;
+    --muted: #C8B88A;
+    --bg: #060410;
+    --card-bg: rgba(255,255,255,0.04);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #060410 0%, #0d0820 40%, #06090d 100%);
+    font-family: 'Noto Naskh Arabic', serif;
+    direction: rtl;
+    color: var(--cream);
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ─── Stars ─── */
+  #stars-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── Lanterns ─── */
+  #lanterns {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 12px;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .lantern svg {
+    width: 28px;
+    height: 50px;
+  }
+  .lantern { animation: swing var(--sd) ease-in-out infinite; transform-origin: top center; }
+  @keyframes swing { 0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(7deg)} }
+
+  /* ─── Layout ─── */
+  #app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 80px 16px 80px;
+    min-height: 100vh;
+  }
+
+  /* ─── Screens ─── */
+  .screen { display: none; animation: fadeUp .6s ease both; }
+  .screen.active { display: block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes barGrow { from{width:0} to{width:var(--w)} }
+  @keyframes twinkle { from{opacity:.2;transform:scale(.8)} to{opacity:1;transform:scale(1.3)} }
+
+  /* ─── Intro ─── */
+  #intro { text-align: center; }
+  .intro-icon { font-size: 72px; margin-bottom: 8px; filter: drop-shadow(0 0 20px #FFD16688); display:block; }
+  .intro-eyebrow { font-size: 12px; letter-spacing: 4px; color: var(--gold); opacity: .7; margin-bottom: 8px; text-transform: uppercase; }
+  .intro-title { font-family: 'Amiri', serif; font-size: 30px; font-weight: 700; color: #FFE8A0; line-height: 1.4; margin-bottom: 6px; }
+  .intro-sub { font-size: 22px; margin-bottom: 20px; }
+  .intro-desc { color: var(--muted); font-size: 15px; line-height: 1.9; margin-bottom: 32px; }
+
+  /* ─── Buttons ─── */
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: #1a0800;
+    border: none;
+    border-radius: 999px;
+    padding: 15px 48px;
+    font-size: 17px;
+    font-family: 'Noto Naskh Arabic', serif;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(200,151,58,.4);
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 14px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-gold:hover { transform: scale(1.04); box-shadow: 0 0 32px rgba(255,200,80,.5); }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid rgba(255,209,102,.25);
+    color: var(--gold);
+    border-radius: 999px;
+    padding: 11px 32px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Noto Naskh Arabic', serif;
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    transition: all .2s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); background: rgba(255,209,102,.08); }
+  .btn-outline {
+    background: rgba(255,209,102,.08);
+    border: 1.5px solid rgba(255,209,102,.22);
+    color: var(--gold);
+    border-radius: 999px;
+    padding: 13px;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: 'Noto Naskh Arabic', serif;
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: all .2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); }
+  .btn-faint {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 13px;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: 'Noto Naskh Arabic', serif;
+    display: block;
+    width: 100%;
+    transition: all .2s;
+  }
+  .btn-faint:hover { border-color: rgba(255,255,255,.25); }
+
+  /* ─── Top personality strip ─── */
+  .top-strip {
+    margin-top: 28px;
+    background: rgba(255,209,102,.07);
+    border: 1px solid rgba(255,209,102,.15);
+    border-radius: 16px;
+    padding: 14px 18px;
+    text-align: center;
+  }
+  .top-strip-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .top-strip-name { font-size: 17px; color: var(--gold); font-weight: 700; }
+
+  /* ─── Quiz ─── */
+  #quiz { animation: slideIn .35s ease both; }
+  .progress-row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--muted); }
+  .progress-bar { height:4px; background:rgba(255,255,255,.1); border-radius:2px; overflow:hidden; margin-bottom:24px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--gold-dark),var(--gold)); border-radius:2px; transition:width .4s ease; }
+  .q-icon { font-size:52px; display:block; text-align:center; margin-bottom:10px; animation:pulse 2s ease infinite; filter:drop-shadow(0 0 16px rgba(255,209,102,.5)); }
+  .q-text { font-family:'Amiri',serif; font-size:24px; font-weight:700; color:#FFE8A0; text-align:center; margin-bottom:24px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .opt {
+    background: rgba(255,209,102,.06);
+    border: 1.5px solid rgba(255,209,102,.18);
+    border-radius: 14px;
+    padding: 14px 20px;
+    color: var(--cream);
+    font-size: 16px;
+    cursor: pointer;
+    text-align: right;
+    font-family: 'Noto Naskh Arabic', serif;
+    transition: background .2s, transform .15s, border-color .2s;
+    animation: fadeUp .4s ease both;
+  }
+  .opt:hover { background:rgba(255,209,102,.14); border-color:rgba(255,209,102,.45); transform:scale(1.02); }
+  .opt:active { transform:scale(.97); }
+
+  /* ─── Result ─── */
+  #result { text-align:center; }
+  .result-card {
+    border-radius: 24px;
+    padding: 32px 22px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(255,255,255,.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card-glow {
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, var(--p-color-glow) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .result-eyebrow { font-size:11px; letter-spacing:4px; opacity:.75; margin-bottom:12px; text-transform:uppercase; }
+  .result-emoji { font-size:64px; display:block; margin-bottom:10px; animation:pulse 2.5s ease infinite; }
+  .result-label { font-size:13px; opacity:.7; margin-bottom:4px; }
+  .result-name { font-family:'Amiri',serif; font-size:28px; font-weight:700; margin-bottom:16px; }
+  .result-desc { font-size:15px; color:#D4C4A0; line-height:1.9; margin-bottom:22px; }
+  .traits { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .trait-row { }
+  .trait-header { display:flex; justify-content:space-between; margin-bottom:4px; }
+  .trait-key { font-size:13px; color:var(--muted); }
+  .trait-val { font-size:13px; font-weight:700; }
+  .trait-bar-bg { height:6px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; }
+  .trait-bar { height:100%; border-radius:3px; animation:barGrow 1.2s ease both; }
+  .result-watermark { margin-top:18px; padding:12px 16px; background:rgba(255,255,255,.04); border-radius:10px; border:1px solid rgba(255,255,255,.07); font-size:11px; color:#A09070; }
+  .copy-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 14px;
+    font-size: 16px;
+    font-family: 'Noto Naskh Arabic', serif;
+    font-weight: 700;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: all .3s;
+  }
+
+  /* ─── Leaderboard ─── */
+  #board { }
+  .back-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; font-family:'Noto Naskh Arabic',serif; margin-bottom:20px; padding:0; display:inline-flex; align-items:center; gap:6px; }
+  .board-header { text-align:center; margin-bottom:26px; }
+  .board-icon { font-size:46px; display:block; margin-bottom:8px; }
+  .board-title { font-family:'Amiri',serif; font-size:26px; color:var(--gold); margin-bottom:4px; }
+  .board-sub { font-size:13px; color:var(--muted); }
+  .board-empty { text-align:center; padding:48px 0; color:var(--muted); }
+  .board-empty span { font-size:40px; display:block; margin-bottom:12px; }
+  .board-list { display:flex; flex-direction:column; gap:12px; }
+  .board-item {
+    background: var(--card-bg);
+    border: 1.5px solid rgba(255,255,255,.07);
+    border-radius: 16px;
+    padding: 14px 16px;
+    animation: fadeUp .5s ease both;
+  }
+  .board-item.first { border-color: rgba(255,209,102,.28); }
+  .board-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .board-medal { font-size:20px; }
+  .board-p-emoji { font-size:20px; }
+  .board-p-name { flex:1; font-size:16px; color:var(--cream); font-weight:600; }
+  .board-pct { font-size:15px; font-weight:700; }
+  .board-bar-bg { height:5px; background:rgba(255,255,255,.07); border-radius:3px; overflow:hidden; }
+  .board-bar { height:100%; border-radius:3px; animation:barGrow 1s ease both; transition:width .8s ease; }
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<div id="lanterns"></div>
+
+<div id="app">
+
+  <!-- ░░ INTRO ░░ -->
+  <div id="intro" class="screen active">
+    <span class="intro-icon">🎭</span>
+    <div class="intro-eyebrow">اختبار شخصية</div>
+    <h1 class="intro-title">أي شخصية عيد أنت؟</h1>
+    <div class="intro-sub">🌙✨</div>
+    <p class="intro-desc">5 أسئلة بس تكشف شخصيتك الحقيقية بالعيد 👀<br>شارك النتيجة وشوف مين أفخم شخصية!</p>
+    <button class="btn-gold" onclick="startQuiz()">ابدأ الاختبار 🎉</button>
+    <button class="btn-ghost" onclick="showScreen('board')">🏆 اللوحة الشرفية</button>
+    <div class="top-strip" id="top-strip" style="display:none">
+      <div class="top-strip-label">أكثر شخصية انتشارًا 🔥</div>
+      <div class="top-strip-name" id="top-strip-name"></div>
+    </div>
+  </div>
+
+  <!-- ░░ QUIZ ░░ -->
+  <div id="quiz" class="screen">
+    <div class="progress-row">
+      <span id="q-counter">سؤال 1 من 5</span>
+      <span id="q-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="q-icon" id="q-icon">🍪</span>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- ░░ RESULT ░░ -->
+  <div id="result" class="screen">
+    <div class="result-card" id="result-card">
+      <div class="result-card-glow" id="result-glow"></div>
+      <div class="result-eyebrow" id="res-eyebrow">نتيجتك بالعيد</div>
+      <span class="result-emoji" id="res-emoji"></span>
+      <div class="result-label">أنت شخصية</div>
+      <div class="result-name" id="res-name"></div>
+      <p class="result-desc" id="res-desc"></p>
+      <div class="traits" id="res-traits"></div>
+      <div class="result-watermark">🌙 أي شخصية عيد أنت؟ — اختبار العيد</div>
+    </div>
+    <button class="copy-btn" id="copy-btn" onclick="copyResult()">📤 شارك نتيجتك</button>
+    <button class="btn-outline" onclick="showScreen('board')">🏆 اللوحة الشرفية</button>
+    <button class="btn-faint" onclick="restart()">🔄 جرّب مجددًا</button>
+  </div>
+
+  <!-- ░░ LEADERBOARD ░░ -->
+  <div id="board" class="screen">
+    <button class="back-btn" onclick="showScreen('intro')">← رجوع</button>
+    <div class="board-header">
+      <span class="board-icon">🏆</span>
+      <div class="board-title">اللوحة الشرفية</div>
+      <div class="board-sub" id="board-sub">أكثر شخصيات العيد انتشارًا</div>
+    </div>
+    <div id="board-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const QUESTIONS = [
+  {
+    emoji: "🍪",
+    text: "الحلا المفضل بالعيد؟",
+    options: [
+      { label: "معمول", value: "social" },
+      { label: "كليجا", value: "social" },
+      { label: "شوكولاتة", value: "sweet" },
+      { label: "لقيمات", value: "sweet" },
+      { label: "تشيزكيك", value: "vip" },
+      { label: "ما آكل حلا أصلًا", value: "coffee" },
+    ]
+  },
+  {
+    emoji: "😴",
+    text: "كم ساعة تنام بعد صلاة العيد؟",
+    options: [
+      { label: "ما أنام", value: "social" },
+      { label: "ساعة", value: "vip" },
+      { label: "3 ساعات", value: "sweet" },
+      { label: "لين المغرب", value: "bear" },
+      { label: "أنام وأصحى ثاني يوم", value: "bear" },
+    ]
+  },
+  {
+    emoji: "🎉",
+    text: "كم يوم يستمر عيدك؟",
+    options: [
+      { label: "أول يوم فقط", value: "bear" },
+      { label: "يومين", value: "online" },
+      { label: "أسبوع كامل", value: "social" },
+      { label: "طول ذي الحجة", value: "sheikh" },
+    ]
+  },
+  {
+    emoji: "👀",
+    text: "أول شيء تسويه بالعيد؟",
+    options: [
+      { label: "آكل", value: "sweet" },
+      { label: "ألبس وأتصور", value: "vip" },
+      { label: "أزور الأهل", value: "sheikh" },
+      { label: "أرسل معايدات", value: "online" },
+      { label: "أختفي وأنام", value: "bear" },
+    ]
+  },
+  {
+    emoji: "☕",
+    text: "قهوتك بالعيد؟",
+    options: [
+      { label: "عربية", value: "sheikh" },
+      { label: "سوداء", value: "coffee" },
+      { label: "لاتيه", value: "vip" },
+      { label: "شاهي", value: "social" },
+      { label: "أي شيء فيه كافيين", value: "coffee" },
+    ]
+  }
+];
+
+const PERSONALITIES = {
+  sheikh: {
+    name: "شيخ العيد", emoji: "👑",
+    color: "#C8973A", accent: "#FFD166",
+    bg: "linear-gradient(135deg,#1a0e00 0%,#3d2200 50%,#1a0e00 100%)",
+    glow: "rgba(200,151,58,0.18)",
+    desc: "أنت عمود الفقار بالعيد. تصحى قبل الأذان، تعرف جدول كل العائلة، وما يبدأ العيد إلا بوجودك.",
+    traits: { "اجتماعي": 98, "منظّم": 95, "صاحب هيبة": 100 }
+  },
+  bear: {
+    name: "الدب الشتوي", emoji: "😴",
+    color: "#6B8CFF", accent: "#A0B4FF",
+    bg: "linear-gradient(135deg,#060d2e 0%,#0d1a4a 50%,#060d2e 100%)",
+    glow: "rgba(107,140,255,0.18)",
+    desc: "بعد الصلاة مباشرة تختفي. العيد بالنسبة لك = نوم + وسادة. مستحيل يرد قبل العصر.",
+    traits: { "نوم": 100, "راحة نفسية": 95, "بطل الصمت": 88 }
+  },
+  sweet: {
+    name: "خبير الحلا", emoji: "🍫",
+    color: "#C0622F", accent: "#FF9A5C",
+    bg: "linear-gradient(135deg,#1a0800 0%,#3d1500 50%,#1a0800 100%)",
+    glow: "rgba(192,98,47,0.18)",
+    desc: "تعرف أفضل معمول بالمدينة. تبدأ العيد بالسكر وتنهيه بالقهوة. تقييمك للحلا أخطر من تقييم المطاعم.",
+    traits: { "عاشق الحلا": 100, "ذوّاقة": 92, "خبير تغذية عكسي": 87 }
+  },
+  vip: {
+    name: "VIP العيد", emoji: "📸",
+    color: "#C46BAD", accent: "#FF90D6",
+    bg: "linear-gradient(135deg,#1a0015 0%,#3d0030 50%,#1a0015 100%)",
+    glow: "rgba(196,107,173,0.18)",
+    desc: "همك الأساسي اللوك والصور. كل ساعة ستوري جديدة. تعرف أفضل إضاءة قبل السلام عليكم.",
+    traits: { "حب الكاميرا": 99, "أناقة": 96, "جهوزية دائمة": 91 }
+  },
+  coffee: {
+    name: "مدمن القهوة", emoji: "☕",
+    color: "#7B9E5A", accent: "#A8D878",
+    bg: "linear-gradient(135deg,#030e00 0%,#0d2200 50%,#030e00 100%)",
+    glow: "rgba(123,158,90,0.18)",
+    desc: "ما تعايد قبل الكافيين. تشرب 7 أكواب وتقول 'آخر واحد'. تعيش على القهوة والحلويات.",
+    traits: { "إدمان قهوة": 100, "صراحة": 89, "طاقة مزيّفة": 94 }
+  },
+  social: {
+    name: "مندوب الزيارات", emoji: "🏃",
+    color: "#4EADA0", accent: "#6EDDD0",
+    bg: "linear-gradient(135deg,#00100e 0%,#002825 50%,#00100e 100%)",
+    glow: "rgba(78,173,160,0.18)",
+    desc: "تزور 14 بيت بيوم واحد. حافظ الشوارع بدون خرائط. طاقتك غير بشرية.",
+    traits: { "اجتماعي": 100, "لياقة بدنية": 90, "بطل الزيارات": 97 }
+  },
+  online: {
+    name: "العيد أونلاين", emoji: "🤖",
+    color: "#A0A0A0", accent: "#D0D0D0",
+    bg: "linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 50%,#0a0a0a 100%)",
+    glow: "rgba(160,160,160,0.12)",
+    desc: "كل معايداتك واتساب. تختفي بالحقيقة وتظهر بالستوري. اجتماعي رقميًا فقط 😂",
+    traits: { "حضور رقمي": 100, "غياب حقيقي": 95, "بطل الإيموجي": 88 }
+  }
+};
+
+const MEDALS = ["🥇","🥈","🥉"];
+const LANTERN_COLORS = ["#FFD166","#FF8A6B","#6B8CFF","#C46BAD","#4EADA0","#FFD166","#FF8A6B","#6B8CFF"];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let step = 0;
+let answers = [];
+let currentResult = null;
+let animating = false;
+
+// ══════════════════════════════════════════════
+//  STARS
+// ══════════════════════════════════════════════
+(function initStars() {
+  const c = document.getElementById('stars-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [];
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+    stars = Array.from({length:60},()=>({
+      x: Math.random()*c.width, y:Math.random()*c.height,
+      r: Math.random()*1.5+.4,
+      phase: Math.random()*Math.PI*2,
+      speed: Math.random()*.02+.008
+    }));
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  function draw(t) {
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      const alpha = .25 + .65*(.5+.5*Math.sin(t*s.speed+s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(255,220,120,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ══════════════════════════════════════════════
+//  LANTERNS
+// ══════════════════════════════════════════════
+(function initLanterns() {
+  const cont = document.getElementById('lanterns');
+  LANTERN_COLORS.forEach((col, i) => {
+    const div = document.createElement('div');
+    div.className = 'lantern';
+    div.style.setProperty('--sd', (2.2+i*.28)+'s');
+    div.innerHTML = `<svg viewBox="0 0 40 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="16" y="0" width="8" height="8" rx="2" fill="${col}" opacity=".45"/>
+      <rect x="18" y="7" width="4" height="5" fill="${col}" opacity=".55"/>
+      <ellipse cx="20" cy="18" rx="12" ry="4" fill="${col}" opacity=".25"/>
+      <rect x="8" y="18" width="24" height="34" rx="6" fill="${col}" opacity=".12"/>
+      <rect x="8" y="18" width="24" height="34" rx="6" stroke="${col}" stroke-width="1.5"/>
+      <line x1="8" y1="18" x2="8" y2="52" stroke="${col}" stroke-width=".7" opacity=".35"/>
+      <line x1="16" y1="18" x2="16" y2="52" stroke="${col}" stroke-width=".7" opacity=".35"/>
+      <line x1="24" y1="18" x2="24" y2="52" stroke="${col}" stroke-width=".7" opacity=".35"/>
+      <line x1="32" y1="18" x2="32" y2="52" stroke="${col}" stroke-width=".7" opacity=".35"/>
+      <ellipse cx="20" cy="52" rx="12" ry="4" fill="${col}" opacity=".25"/>
+      <rect x="18" y="52" width="4" height="8" fill="${col}" opacity=".45"/>
+      <ellipse cx="20" cy="62" rx="4" ry="2" fill="${col}" opacity=".65"/>
+    </svg>`;
+    cont.appendChild(div);
+  });
+})();
+
+// ══════════════════════════════════════════════
+//  LEADERBOARD (localStorage)
+// ══════════════════════════════════════════════
+function getLeaderboard() {
+  try { return JSON.parse(localStorage.getItem('eid-leaderboard') || '{}'); }
+  catch { return {}; }
+}
+function saveLeaderboard(pid) {
+  const lb = getLeaderboard();
+  lb[pid] = (lb[pid]||0)+1;
+  localStorage.setItem('eid-leaderboard', JSON.stringify(lb));
+}
+function totalVotes(lb) {
+  return Object.values(lb).reduce((a,b)=>a+b,0)||1;
+}
+
+// ══════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.style.animation = 'none';
+  requestAnimationFrame(()=>{ el.style.animation = ''; });
+
+  if (id === 'intro') renderTopStrip();
+  if (id === 'board') renderBoard();
+}
+
+// ══════════════════════════════════════════════
+//  INTRO
+// ══════════════════════════════════════════════
+function renderTopStrip() {
+  const lb = getLeaderboard();
+  const sorted = Object.entries(lb).sort((a,b)=>b[1]-a[1]);
+  if (sorted.length === 0) { document.getElementById('top-strip').style.display='none'; return; }
+  const [pid, cnt] = sorted[0];
+  const p = PERSONALITIES[pid];
+  const pct = Math.round((cnt/totalVotes(lb))*100);
+  document.getElementById('top-strip').style.display='block';
+  document.getElementById('top-strip-name').textContent = `${p.emoji} ${p.name}  ${pct}%`;
+}
+
+// ══════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════
+function startQuiz() {
+  step = 0; answers = []; animating = false;
+  renderQuestion();
+  showScreen('quiz');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[step];
+  const pct = Math.round((step/QUESTIONS.length)*100);
+
+  document.getElementById('q-counter').textContent = `سؤال ${step+1} من ${QUESTIONS.length}`;
+  document.getElementById('q-pct').textContent = pct+'%';
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('q-icon').textContent = q.emoji;
+  document.getElementById('q-text').textContent = q.text;
+
+  const cont = document.getElementById('options');
+  cont.innerHTML = '';
+  q.options.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt.label;
+    btn.style.animationDelay = (i*.06)+'s';
+    btn.onclick = () => handleAnswer(opt.value);
+    cont.appendChild(btn);
+  });
+}
+
+function handleAnswer(value) {
+  if (animating) return;
+  animating = true;
+  answers.push(value);
+
+  setTimeout(()=>{
+    animating = false;
+    if (step+1 < QUESTIONS.length) {
+      step++;
+      renderQuestion();
+      // re-trigger slide animation
+      const quiz = document.getElementById('quiz');
+      quiz.style.animation='none';
+      requestAnimationFrame(()=>{ quiz.style.animation='slideIn .35s ease both'; });
+    } else {
+      showResult();
+    }
+  }, 280);
+}
+
+// ══════════════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════════════
+function computeResult() {
+  const counts = {};
+  answers.forEach(v=>{ counts[v]=(counts[v]||0)+1; });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function showResult() {
+  const pid = computeResult();
+  currentResult = pid;
+  saveLeaderboard(pid);
+  const p = PERSONALITIES[pid];
+
+  // card styling
+  const card = document.getElementById('result-card');
+  card.style.background = p.bg;
+  card.style.borderColor = p.color+'44';
+  card.style.boxShadow = `0 0 48px ${p.color}22, inset 0 1px 0 ${p.color}33`;
+  document.getElementById('result-glow').style.background = `radial-gradient(ellipse at 50% 0%, ${p.glow} 0%, transparent 70%)`;
+
+  document.getElementById('res-eyebrow').style.color = p.accent;
+  document.getElementById('res-emoji').textContent = p.emoji;
+  document.getElementById('res-emoji').style.filter = `drop-shadow(0 0 24px ${p.color})`;
+  document.getElementById('res-name').textContent = `"${p.name}"`;
+  document.getElementById('res-name').style.color = p.accent;
+  document.getElementById('res-desc').textContent = p.desc;
+
+  // traits
+  const traitsEl = document.getElementById('res-traits');
+  traitsEl.innerHTML = '';
+  Object.entries(p.traits).forEach(([k,v])=>{
+    traitsEl.innerHTML += `
+      <div class="trait-row">
+        <div class="trait-header">
+          <span class="trait-key">${k}</span>
+          <span class="trait-val" style="color:${p.accent}">${v}%</span>
+        </div>
+        <div class="trait-bar-bg">
+          <div class="trait-bar" style="width:${v}%;background:linear-gradient(90deg,${p.color}88,${p.accent});--w:${v}%"></div>
+        </div>
+      </div>`;
+  });
+
+  // copy button
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.style.background = `linear-gradient(135deg,${p.color},${p.accent})`;
+  copyBtn.style.color = '#1a0800';
+
+  showScreen('result');
+}
+
+function copyResult() {
+  const p = PERSONALITIES[currentResult];
+  const text = `🎉 عيدك يكشفك!\nأنا شخصية "${p.name}" ${p.emoji}\n${p.desc}\nجرّب الاختبار: أي شخصية عيد أنت؟ 🌙`;
+  const btn = document.getElementById('copy-btn');
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent = '✅ تم النسخ!';
+    btn.style.background = 'rgba(100,200,100,0.2)';
+    btn.style.color = '#80FF80';
+    setTimeout(()=>{
+      btn.textContent = '📤 شارك نتيجتك';
+      const p2 = PERSONALITIES[currentResult];
+      btn.style.background = `linear-gradient(135deg,${p2.color},${p2.accent})`;
+      btn.style.color = '#1a0800';
+    }, 2200);
+  }).catch(()=>{
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✅ تم النسخ!';
+    setTimeout(()=>{ btn.textContent = '📤 شارك نتيجتك'; }, 2200);
+  });
+}
+
+function restart() { showScreen('intro'); }
+
+// ══════════════════════════════════════════════
+//  LEADERBOARD
+// ══════════════════════════════════════════════
+function renderBoard() {
+  const lb = getLeaderboard();
+  const tv = totalVotes(lb);
+  const sorted = Object.entries(lb).sort((a,b)=>b[1]-a[1]);
+  const total = Object.values(lb).reduce((a,b)=>a+b,0);
+
+  document.getElementById('board-sub').textContent =
+    `أكثر شخصيات العيد انتشارًا • ${total} مشارك`;
+
+  const listEl = document.getElementById('board-list');
+  listEl.innerHTML = '';
+
+  if (sorted.length === 0) {
+    listEl.innerHTML = `<div class="board-empty"><span>🌙</span>لا يوجد بيانات بعد. كن أول من يشارك!</div>`;
+    return;
+  }
+
+  const colors = ["#FFD166","#C0C0C0","#CD7F32","#6B8CFF","#C46BAD","#4EADA0","#C0622F"];
+  const ul = document.createElement('div');
+  ul.className = 'board-list';
+
+  sorted.forEach(([pid,cnt],i)=>{
+    const p = PERSONALITIES[pid];
+    if (!p) return;
+    const pct = Math.round((cnt/tv)*100);
+    const item = document.createElement('div');
+    item.className = 'board-item' + (i===0?' first':'');
+    item.style.animationDelay = (i*.07)+'s';
+    item.innerHTML = `
+      <div class="board-row">
+        <span class="board-medal">${MEDALS[i]||((i+1)+'.')}</span>
+        <span class="board-p-emoji">${p.emoji}</span>
+        <span class="board-p-name">${p.name}</span>
+        <span class="board-pct" style="color:${colors[i]||'#C8B88A'}">${pct}%</span>
+      </div>
+      <div class="board-bar-bg">
+        <div class="board-bar" style="width:${pct}%;background:linear-gradient(90deg,${p.color}88,${p.accent});--w:${pct}%"></div>
+      </div>`;
+    ul.appendChild(item);
+  });
+
+  listEl.appendChild(ul);
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+renderTopStrip();
+</script>
+</body>
+</html>
